@@ -1,4 +1,4 @@
-# indemind-sdk-win64
+# indemind-sdk-Linux64
 Binocular Vision Inertial Module
 
 #### 简介  
@@ -13,15 +13,19 @@ Linux Ubuntu 16.04 gcc5.4 和 Ubuntu 18.04 gcc7.3
 
 #### 安装依赖库
 安装cmake
+~~~
     sudo apt-get install cmake
     
 安装google-glog + gflags
+~~~
     sudo apt-get install libgoogle-glog-dev
     
 安装BLAS & LAPACK
+~~~
     sudo apt-get install libatlas-base-dev
 
 下载SDK
+~~~
     https://github.com/INDEMIND/SDK-Linux
 
 #### 使用方式  
