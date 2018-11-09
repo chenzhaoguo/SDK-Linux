@@ -1,11 +1,11 @@
 #include <mutex>
 #include <queue>
-#include <future>
 #include <thread>
 #include <iomanip>
-#include <fstream>
+#include <string>
+#include <unistd.h>
 #include <iostream>
-
+#include <cmath>
 #include "imrsdk.h"
 
 struct ImrDepthImageTarget
@@ -28,7 +28,7 @@ void  SdkCameraCallBack(double time, unsigned char* pLeft, unsigned char* pRight
 
 void sdkImuCallBack(double time, float accX, float accY, float accZ, float gyrX, float gyrY, float gyrZ, void* pParam)
 {
-	//std::cout << "sdkImuCallBack==" << std::setprecision(10) << time << std::endl;
+	//std::cout << "sdkImuCallBack==" << time << std::endl;
 }
 
 void sdkSLAMResult(int ret, void* pData, void* pParam)
@@ -45,10 +45,10 @@ int main()
     config.bSlam = true;   //true: open slam
     pSDK->Init(config);
 
-    //pSDK->RegistModuleCameraCallback(SdkCameraCallBack,NULL);
-    //pSDK->RegistModuleIMUCallback(sdkImuCallBack,NULL);
-    //pSDK->RegistModulePoseCallback(sdkSLAMResult,NULL);
-    pSDK->AddPluginCallback("depthimage", "depth", DepthImageCallback, NULL);
+    pSDK->RegistModuleCameraCallback(SdkCameraCallBack,NULL);
+    pSDK->RegistModuleIMUCallback(sdkImuCallBack,NULL);
+//    pSDK->RegistModulePoseCallback(sdkSLAMResult,NULL);
+//   pSDK->AddPluginCallback("depthimage", "depth", DepthImageCallback, NULL);
 
 
     std::this_thread::sleep_for(std::chrono::seconds(60 * 60 * 24));
