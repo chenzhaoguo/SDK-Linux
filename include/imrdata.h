@@ -7,6 +7,8 @@ struct ImrPose {
 	float _position[3];
 	//[w,x,y,z]
 	float _rotation[4];
+	//[pitch roll psi]
+	float _oula[3];
 };
 //模组位姿
 struct ImrModulePose {

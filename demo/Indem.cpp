@@ -33,7 +33,8 @@ void sdkImuCallBack(double time, float accX, float accY, float accZ, float gyrX,
 
 void sdkSLAMResult(int ret, void* pData, void* pParam)
 {
-	//std::cout << "sdkSLAMResult==" << std::setprecision(10) << ret << std::endl;
+    ImrModulePose* pose = (ImrModulePose*)pData;
+    std::cout << "SLAM: "<<pose->_pose._position[0] << "," << pose->_pose._position[1]  << "," << pose->_pose._position[2] << ","<< pose->_pose._oula[0] << "," << pose->_pose._oula[1]  << "," << pose->_pose._oula[2]  << std::endl;
 }
 
 int main()
@@ -47,7 +48,7 @@ int main()
 
     pSDK->RegistModuleCameraCallback(SdkCameraCallBack,NULL);
     pSDK->RegistModuleIMUCallback(sdkImuCallBack,NULL);
-//    pSDK->RegistModulePoseCallback(sdkSLAMResult,NULL);
+    pSDK->RegistModulePoseCallback(sdkSLAMResult,NULL);
 //   pSDK->AddPluginCallback("depthimage", "depth", DepthImageCallback, NULL);
 
 
