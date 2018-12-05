@@ -1,6 +1,6 @@
 {
     "running": {
-        "log": 1,
+        "log": 0,
         "type": 1,
         "algorithm": {
             "Detection": {
