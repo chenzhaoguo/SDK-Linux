@@ -37,7 +37,7 @@ struct ImrImages {
 struct ImrModuleDeviceInfo {
     char _id[32];               //模组ID
     char _designer[32];         //模组开发商
-    char _fireware_version[32]; //固件版本
+    char _firmware_version[32]; //固件版本
     char _hardware_version[32];
     char _lens[32];
     char _imu[32];
