@@ -12,10 +12,18 @@ using namespace indem;
 
 struct ImrDepthImageTarget
 {
+    double _time;
 	float _cubesize;
 	int _image_w;
 	int _image_h;
 	float* _deepptr;
+};
+
+struct CommandParams {
+	int16_t width;
+	int16_t height;
+	char distortion_model[16];
+	double P[12];
 };
 
 void PrintModuleInfo(CIMRSDK* pSDK)
@@ -100,12 +108,11 @@ void sdkImuCallBack(double time, float accX, float accY, float accZ, float gyrX,
 void sdkSLAMResult(int ret, void* pData, void* pParam)
 {
     ImrModulePose* pose = (ImrModulePose*)pData;
-//    std::cout << "SLAM: "<<pose->_pose._position[0] << "," << pose->_pose._position[1]  << "," << pose->_pose._position[2] << ","<< pose->_pose._oula[0] << "," << pose->_pose._oula[1]  << "," << pose->_pose._oula[2]  << std::endl;
+    std::cout << "SLAM: "<<pose->_pose._time<<","<<pose->_pose._position[0] << "," << pose->_pose._position[1]  << "," << pose->_pose._position[2] << ","<< pose->_pose._oula[0] << "," << pose->_pose._oula[1]  << "," << pose->_pose._oula[2]  << std::endl;
 }
 
 int main()
 {
-//    using namespace indem;
     CIMRSDK* pSDK = new CIMRSDK();
     MRCONFIG config = { 0 };
 
@@ -118,6 +125,8 @@ int main()
     pSDK->RegistModuleCameraCallback(SdkCameraCallBack,NULL);
     pSDK->RegistModuleIMUCallback(sdkImuCallBack,NULL);
     pSDK->RegistModulePoseCallback(sdkSLAMResult,NULL);
+    CommandParams params={0};
+    //pSDK->InvokePluginMethod("depthimage","getParams",NULL,&params);
 //    pSDK->AddPluginCallback("depthimage", "depth", DepthImageCallback, NULL);
 
 
