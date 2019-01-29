@@ -55,6 +55,17 @@ Linux Ubuntu 16.04 gcc5.4 和 Ubuntu 18.04 gcc7.3
 ~~~
     pSDK->AddPluginCallback("depthimage", "depth", DepthImageCallback, NULL);
 ~~~
+回调函数中的pData是如下的一个数据结构:
+~~~
+struct ImrDepthImageTarget
+{
+    double _time;
+    float _cubesize;
+    int _image_w;
+    int _image_h;
+    float* _deepptr;    //深度图数据指针,长度为_image_w*_image_h,每个值对应像素位置的深度
+};
+~~~
 释放资源
 ~~~
     pSDK->Release();
@@ -92,6 +103,16 @@ virtual bool InvokeCommand(const char* commandName, void* pIn, void* pOut);
 #### 更新  
 2018.11.16更新
 1. `ImrModulePose`结构添加欧拉角
-2. 宏定义`MRSDK_VERSION`提升到2
+2. 宏定义`MRSDK_VERSION`提升到2  
+
+2018.1.16更新  
+1. 升级驱动,支持25/50Hz频率的图像
+2. 修复SDK数据捕获时崩溃的问题
+3. SDK移除对boost1.68版本的依赖
+4. 深度图能够获取ROS需要的P值了
+5. 修复了slam关闭的情况下不能获取模组参数信息的问题
+6. 在不使用slam的情况下不再加载slam模块
+7. 增加更多的错误信息提示
+8. 宏定义`MRSDK_VERSION`提升到3  
 #### FAQ  
 常见问题请参考[FAQ](https://github.com/INDEMIND/SDK-Win64/wiki)
