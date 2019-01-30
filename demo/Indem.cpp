@@ -125,8 +125,10 @@ int main()
     pSDK->RegistModuleCameraCallback(SdkCameraCallBack,NULL);
     pSDK->RegistModuleIMUCallback(sdkImuCallBack,NULL);
     pSDK->RegistModulePoseCallback(sdkSLAMResult,NULL);
-    CommandParams params={0};
-    //pSDK->InvokePluginMethod("depthimage","getParams",NULL,&params);
+
+//    CommandParams params={0};
+//    pSDK->InvokePluginMethod("depthimage","getParams",NULL,&params);
+
 //    pSDK->AddPluginCallback("depthimage", "depth", DepthImageCallback, NULL);
 
 

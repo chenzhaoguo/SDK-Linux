@@ -11,7 +11,7 @@ include_directories(../include)
 add_definitions(-std=c++11)
 add_executable(${PROJECT_NAME} Indem.cpp)
 target_link_libraries(${PROJECT_NAME}
-${CMAKE_SOURCE_DIR}/../lib/1604/libindem.a
+${CMAKE_SOURCE_DIR}/../lib/1604/libindem.so
 ${CMAKE_SOURCE_DIR}/../lib/1604/libslam.so
 ${CMAKE_SOURCE_DIR}/../lib/1604/libyujing.so
 ${CMAKE_SOURCE_DIR}/../lib/1604/libslam_imp.so
