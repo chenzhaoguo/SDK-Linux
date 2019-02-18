@@ -114,5 +114,9 @@ virtual bool InvokeCommand(const char* commandName, void* pIn, void* pOut);
 6. 在不使用slam的情况下不再加载slam模块
 7. 增加更多的错误信息提示
 8. 宏定义`MRSDK_VERSION`提升到3  
+
+2019.02.15更新
+1. 添加了对Linux1604版本下Ros的支持
+
 #### FAQ  
 常见问题请参考[FAQ](https://github.com/INDEMIND/SDK-Win64/wiki)
