@@ -1,17 +1,6 @@
 {
     "running": {
         "log": 0,
-        "type": 1,
-        "algorithm": {
-            "Detection": {
-                "open": false,
-                "params": {
-                    "freq": 200,
-                    "hasmap": false,
-                    "saveoctomap": false,
-                    "useoctomap": false
-                }
-            }
-        }
+        "type": 1
     }
 }

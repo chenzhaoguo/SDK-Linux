@@ -8,23 +8,12 @@
 #include <cmath>
 #include "imrsdk.h"
 
+//通过定义DISPLAY_POINT_CLOUD宏以显示点云功能,点云示例使用opencv_viz进行显示
+#ifdef DISPLAY_POINT_CLOUD
+#include <opencv2/viz.hpp>
+#include <opencv2/highgui.hpp>
+#endif
 using namespace indem;
-
-struct ImrDepthImageTarget
-{
-    double _time;
-	float _cubesize;
-	int _image_w;
-	int _image_h;
-	float* _deepptr;
-};
-
-struct CommandParams {
-	int16_t width;
-	int16_t height;
-	char distortion_model[16];
-	double P[12];
-};
 
 void PrintModuleInfo(CIMRSDK* pSDK)
 {
@@ -90,10 +79,56 @@ void PrintModuleParameters(CIMRSDK* pSDK)
     std::cout << "SigmaGwC: " << params._SigmaGwC << std::endl;
 }
 
-void DepthImageCallback(int ret, void* pData, void* pParam) {
-	ImrDepthImageTarget* Depth = reinterpret_cast<ImrDepthImageTarget*>(pData);
-        //std::cout << "DepthImageCallback==" << std::setprecision(10) << Depth->_image_w << ", _image_h" << Depth->_image_h << std::endl;
+#ifdef DISPLAY_POINT_CLOUD
+struct point_xyz {
+    float x;
+    float y;
+    float z;
+    float a;
+};
+struct DepthData {
+    double _time;
+    unsigned char* _depthImage;
+    size_t _number;
+    point_xyz* _points;
+};
+struct CommandParams {
+    int16_t width;
+    int16_t height;
+    char distortion_model[16];
+    double P[12];
+};
+CommandParams g_params = { 0 };
+std::mutex global_mutex;
+cv::viz::WCloud* global_cloud_data=NULL;
+void CloudDataCallback(int ret, void* pData, void* pParam) {
+    DepthData* pCloudData = (DepthData*)pData;
+    cv::Mat cloudPoint(1, pCloudData->_number, CV_32FC3);
+    cv::Mat cloudColor(1, pCloudData->_number, CV_8UC1);
+    auto* pt = cloudPoint.ptr<cv::Point3f>();
+    auto* pColor = cloudColor.ptr<unsigned char>();
+    for (int cnt = 0; cnt < pCloudData->_number; ++cnt)
+    {
+        auto& point = pCloudData->_points[cnt];
+        pt[cnt].x = point.x;
+        pt[cnt].y = point.y;
+        pt[cnt].z = point.z;
+        pColor[cnt] = point.a;
+    }
+    if (global_cloud_data == nullptr) {
+        global_cloud_data = new cv::viz::WCloud(cloudPoint, cloudColor);
+    }
+    else {
+        cv::viz::WCloud* pT = global_cloud_data;
+        {
+            std::unique_lock<std::mutex> cloudLock(global_mutex);
+            global_cloud_data = nullptr;
+        }
+        global_cloud_data = new cv::viz::WCloud(cloudPoint, cloudColor);
+        delete pT;
+    }
 }
+#endif
 
 void  SdkCameraCallBack(double time, unsigned char* pLeft, unsigned char* pRight, int width, int height, int channel, void* pParam)
 {
@@ -116,7 +151,7 @@ int main()
     CIMRSDK* pSDK = new CIMRSDK();
     MRCONFIG config = { 0 };
 
-    config.bSlam = true;   //true: open slam
+    config.bSlam = false;   //true: open slam
     pSDK->Init(config);
 
 //    PrintModuleInfo(pSDK);
@@ -126,11 +161,34 @@ int main()
     pSDK->RegistModuleIMUCallback(sdkImuCallBack,NULL);
     pSDK->RegistModulePoseCallback(sdkSLAMResult,NULL);
 
-//    CommandParams params={0};
-//    pSDK->InvokePluginMethod("depthimage","getParams",NULL,&params);
-
-//    pSDK->AddPluginCallback("depthimage", "depth", DepthImageCallback, NULL);
-
+#ifdef DISPLAY_POINT_CLOUD
+    pSDK->InvokePluginMethod("pointcloud", "getParams", NULL, &g_params);
+    if (pSDK->AddPluginCallback("pointcloud", "depth", CloudDataCallback, NULL) == PLG_NOT_EXIST) {
+        std::cout << "Load pointcloud fail" << std::endl;
+    }
+    //获取点云数据并三维呈现，点云坐标以模组为原点，因此为了看到画面，需要设置3D场景中camera的位姿
+    cv::viz::Viz3d window("point_cloud");
+    window.showWidget("Coordinate", cv::viz::WCoordinateSystem());
+    cv::Vec3f cam_position(-5.0f, 0.0f, .0f), cam_focal_point(0.f, 0.f, 0.0f), cam_head_direc(.0f, 0.0f, 1.0f);
+    cv::Affine3f cam_pose = cv::viz::makeCameraPose(cam_position, cam_focal_point, cam_head_direc);
+    window.setViewerPose(cam_pose);
+    window.setRenderingProperty("Coordinate", cv::viz::LIGHTING, 0);
+    while (!window.wasStopped()) {
+        {
+            std::unique_lock<std::mutex> cloudLock(global_mutex);
+            if (global_cloud_data) {
+                window.showWidget("Cloud", *global_cloud_data);
+                try {
+                    window.setRenderingProperty("Cloud", cv::viz::LIGHTING, 0);
+                }
+                catch (cv::Exception& err) {
+                    std::cout << err.what() << std::endl;
+                }
+	    }
+        }
+        window.spinOnce(1, true);
+    }
+#endif
 
     std::this_thread::sleep_for(std::chrono::seconds(60 * 60 * 24));
     pSDK->Release();
