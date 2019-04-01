@@ -3,7 +3,7 @@ project(indemind_module)
 
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS
+FIND_PACKAGE(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   sensor_msgs
@@ -11,27 +11,30 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   cv_bridge
   tf
+  pcl_conversions
+  pcl_ros
 )
+add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
+find_package(OpenCV 3.4.3 REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES indemind_module
-  CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs geometry_msgs tf
+  CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs geometry_msgs tf 
 )
-
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
 
- add_executable(module_driver src/camera_driver.cpp)
+add_executable(module_driver src/camera_driver.cpp)
+FIND_PACKAGE(Boost 1.58.0 REQUIRED COMPONENTS system filesystem)
 
- add_dependencies(module_driver ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(module_driver ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
- target_link_libraries(module_driver
+ TARGET_LINK_LIBRARIES(module_driver
    ${PROJECT_SOURCE_DIR}/../../lib/1604/libindem.so
-   ${catkin_LIBRARIES}
    ${PROJECT_SOURCE_DIR}/../../lib/1604/libboost_filesystem.so.1.58.0
    ${PROJECT_SOURCE_DIR}/../../lib/1604/libboost_system.so.1.58.0
    ${PROJECT_SOURCE_DIR}/../../lib/1604/libg3logger.so.1.3.0-0
@@ -39,8 +42,8 @@ include_directories(
    ${PROJECT_SOURCE_DIR}/../../lib/1604/libopencv_core.so.3.4
    ${PROJECT_SOURCE_DIR}/../../lib/1604/libopencv_imgproc.so.3.4
    ${PROJECT_SOURCE_DIR}/../../lib/1604/libopencv_videoio.so.3.4
+   ${catkin_LIBRARIES}
    pthread
    stdc++fs
    dl
  )
-

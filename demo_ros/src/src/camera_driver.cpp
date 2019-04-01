@@ -5,10 +5,15 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <mutex>
+#include <iostream>
 #include <pthread.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
 #include <linux/videodev2.h>
+
+//OpenCV
+#include <opencv2/highgui.hpp>
+#include <opencv2/calib3d.hpp>
+
 //SDK
 #include <imrsdk.h>
 //Ros
@@ -20,6 +25,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/PointCloud.h>
 
 using namespace indem;	
 
@@ -28,10 +34,12 @@ int imu_id = 0;
 int slam_id = 0;
 int depth_id = 0;
 int camera_id = 0;
+int pc_id = 0;
 ros::Time imu_start_time;
 ros::Time slam_start_time;
 ros::Time depth_start_time;
 ros::Time camera_start_time;
+ros::Time pc_start_time;
 int image_width = 0;
 int image_height = 0;
 
@@ -58,12 +66,13 @@ ros::Publisher depth_pub;
 ros::Publisher image_l_pub;
 ros::Publisher image_r_pub;
 ros::Publisher camera_info_pub;
+ros::Publisher point_cloud_pub;
 
 struct CommandParams{               
 	int16_t width;
 	int16_t height;
 	char distortion_model[16];
-    	double P[12];
+    double P[12];
 };
 
 void ImuCallBackFunction(double time, float accX, float accY, float accZ, float gyrX, float gyrY, float gyrZ, void* pParam)
@@ -120,7 +129,7 @@ void CameraCallbackFunction(double time, unsigned char* pLeft, unsigned char* pR
 	cvi_r.toImageMsg(imgr);	
 	image_r_pub.publish(imgr);
 }	
-
+/*
 void DepthDataCallback(int, void* pData, void* pParam)
 {
 	//DepthData *Depth = (DepthData*)pData;
@@ -148,7 +157,7 @@ void DepthDataCallback(int, void* pData, void* pParam)
 	//---------publish Image,CameraInfo--------------------
 	depth_pub.publish(image_msg);
 }
-
+*/
 void sdkSLAMResult(int ret, void* pData, void* pParam)
 {	
 	if (ret == 0)
@@ -169,6 +178,96 @@ void sdkSLAMResult(int ret, void* pData, void* pParam)
 	slam_pub.publish(pose);
 	}
 }
+struct point_xyz {
+    float x;
+    float y;
+    float z;
+    float a;
+};
+struct DepthData {
+    double _time;
+    unsigned char* _depthImage;
+    size_t _number;
+    point_xyz* _points;
+};
+CommandParams g_params = { 0 };
+void CloudDataCallback(int ret, void* pData, void* pParam) {
+    DepthData* Depth = (DepthData*)pData;
+	if (depth_id == 0)
+		depth_start_time  = ros::Time::now() - ros::Duration(Depth->_time); 
+	//--------Header Info----------------------------------
+	std_msgs::Header header_msg;
+	header_msg.seq        = depth_id++;
+	header_msg.stamp      = depth_start_time + ros::Duration(Depth->_time);
+    header_msg.frame_id   = "base_link";
+	camerainfo_msg.header = header_msg;
+	camerainfo_msg.height = g_params.height;
+	camerainfo_msg.width  = g_params.width;
+	//---------publish camerainfo--------------------------		
+	camera_info_pub.publish(camerainfo_msg);
+	//---------Image Info----------------------------------
+	cv_bridge::CvImage cvi;	
+	sensor_msgs::Image image_msg;
+	cvi.header   = header_msg;
+	cvi.encoding = "32FC1";
+	cvi.image    = cv::Mat(g_params.height,g_params.width, CV_32FC1, Depth->_depthImage);
+	cvi.toImageMsg(image_msg);	
+	//---------publish Image,CameraInfo--------------------
+	depth_pub.publish(image_msg);
+
+
+ 	//------------PointCloud Area--------------------------
+
+
+	unsigned int num_points = Depth->_number;
+
+    sensor_msgs::PointCloud cloud;
+
+ 	cloud.header.stamp = ros::Time::now();
+ 	cloud.header.frame_id = "map";
+    cloud.points.resize(num_points);
+
+
+   	for(unsigned int i = 0; i < num_points; ++i)
+   	{ 
+   		auto& point = Depth->_points[i];
+   		cloud.points[i].x = point.x; 
+   		cloud.points[i].y = point.y; 
+   		cloud.points[i].z = point.z; 
+   	}
+   	point_cloud_pub.publish(cloud);
+}
+/*
+uint64_t[] ReadODFileInfo(){
+
+    char   buffer[MAX_PATH];
+    getcwd(buffer, MAX_PATH);
+    string file_path;
+    file_path = buffer;
+    file_path += "\\debug\\moduleset.txt";
+    std::cout<<file_path<<std::endl;
+    std::ifstream od_file(file_path);
+    if (!od_file.is_open()) {
+        std::cout<<"no open"<<std::endl;
+        return;
+    }
+    std::string line = "";
+    std::string item = "";
+    uint64_t modlue_siz_frequency[4]{0,0,0,0};
+    int i = 0;
+    while (getline(od_file,line)) {
+        std::istringstream is(line);
+        while (getline(is, item, ':')) {
+            std::stringstream ModuleFile;
+            ModuleFile << item;
+            ModuleFile >> modlue_siz_frequency[i];
+            i++;
+        }
+    }
+    od_file.close();
+    return modlue_siz_frequency;
+}
+*/
 
 int main(int argc, char **argv)
 {
@@ -182,34 +281,27 @@ int main(int argc, char **argv)
 	image_l_pub = n.advertise<sensor_msgs::Image>("/module/image_left", 10);
 	image_r_pub = n.advertise<sensor_msgs::Image>("/module/image_right", 10);
 	depth_pub = n.advertise<sensor_msgs::Image>("/module/depth/image_raw", 10);
+	point_cloud_pub = n.advertise<sensor_msgs::PointCloud>("/module/depth/point_cloud", 10);
 	camera_info_pub = n.advertise<sensor_msgs::CameraInfo>("/module/depth/camera_info", 10);
-
 	//-----------------SDK Init---------------------------------------------
-    	CIMRSDK* pSDK = new CIMRSDK();
+    CIMRSDK* pSDK = new CIMRSDK();
 	MRCONFIG config = {0};
 	//slam true:open false:close
 	config.bSlam = true;
 	pSDK->Init(config);
 	//------------------get CommandParams Info------------------------------
-	CommandParams params;
-	pSDK->InvokePluginMethod("pointCloud","getParams",NULL,&params);
-	pSDK->InvokePluginMethod("depthimage","getParams",NULL,&params);
-	//-----------another-------------------
-	//image_width = params.width;
-	//image_height = params.height;
-	//camerainfo_msg.height = image_height;
-	//camerainfo_msg.width = image_width;
+	pSDK->InvokePluginMethod("pointcloud", "getParams", NULL, &g_params);
 	//-------------------------------------
 	for(int i =0;i < 12;++i){
-	    camerainfo_msg.P[i] = params.P[i];
+	    camerainfo_msg.P[i] = g_params.P[i];
 	}
-	camerainfo_msg.distortion_model = params.distortion_model;
+	camerainfo_msg.distortion_model = g_params.distortion_model;
 	//-----------------------set callback-----------------------------------
 	//------------------SLAM|IMU|CAMERA|DEPTH-------------------------------
 	pSDK->RegistModulePoseCallback(sdkSLAMResult,NULL);
 	pSDK->RegistModuleIMUCallback(ImuCallBackFunction,NULL);
 	pSDK->RegistModuleCameraCallback(CameraCallbackFunction,NULL);
-	pSDK->AddPluginCallback("depthimage", "depth", DepthDataCallback, NULL);         
+	pSDK->AddPluginCallback("pointcloud", "depth", CloudDataCallback, NULL);   
 	while(ros::ok())
 	{
 		ros::spinOnce(); 
