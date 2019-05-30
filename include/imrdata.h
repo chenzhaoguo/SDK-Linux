@@ -1,14 +1,14 @@
 ﻿#pragma once
 //该文件存放SDK对外的数据接口
-//坐标系定义：x轴右，y轴上,z轴后
+//坐标系定义：x轴朝左，y轴朝上，z轴朝前
 struct ImrPose {
 	double _time;
 	//[x,y,z]
 	float _position[3];
 	//[w,x,y,z]
 	float _rotation[4];
-	//[pitch roll psi]
-	float _oula[3];
+    //[pitch roll psi]
+    float _oula[3];
 };
 //模组位姿
 struct ImrModulePose {
