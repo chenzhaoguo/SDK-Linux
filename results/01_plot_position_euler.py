@@ -9,7 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-file_result = os.path.abspath('./result13') + '/position.txt'
+file_result = os.path.abspath('./result7') + '/position.txt'
 
 def plot_position():
     ###    load data    ###
@@ -45,7 +45,7 @@ def plot_position():
     ax3.plot(traj_position[:,0], traj_position[:,1], linewidth=1.0, color='b')
     ax3.set_xlabel('x [m]', fontsize=10)
     ax3.set_ylabel('y [m]', fontsize=10)
-    # ax3.set_ylim(-0.2, 0.2)
+    ax3.set_ylim(-0.8, 0.8)
     ax3.grid(linestyle="--")
 
 
