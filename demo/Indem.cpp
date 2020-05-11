@@ -137,13 +137,19 @@ void  SdkCameraCallBack(double time, unsigned char* pLeft, unsigned char* pRight
 
 void sdkImuCallBack(double time, float accX, float accY, float accZ, float gyrX, float gyrY, float gyrZ, void* pParam)
 {
-//	std::cout << "sdkImuCallBack==" << time << " " << accX << "  " << accY << "  " << accZ  << "  " << gyrX << "  " << gyrY << "  " << gyrZ  << std::endl;
+    // std::cout << "imu " << time << " " << accX << " " << accY << " " << accZ  << " " 
+    //                                    << gyrX << " " << gyrY << " " << gyrZ  << std::endl;
 }
 
 void sdkSLAMResult(int ret, void* pData, void* pParam)
 {
     ImrModulePose* pose = (ImrModulePose*)pData;
-    std::cout << "SLAM: "<<pose->_pose._time<<","<<pose->_pose._position[0] << "," << pose->_pose._position[1]  << "," << pose->_pose._position[2] << ","<< pose->_pose._oula[0] << "," << pose->_pose._oula[1]  << "," << pose->_pose._oula[2]  << std::endl;
+    std::cout << "slam " << pose->_pose._time << " " << pose->_pose._position[0] << " "
+                                                     << pose->_pose._position[1] << " "
+                                                     << pose->_pose._position[2] << " "
+                                                     << pose->_pose._oula[0] << " "
+                                                     << pose->_pose._oula[1] << " "
+                                                     << pose->_pose._oula[2] << std::endl;
 }
 
 int main()
@@ -151,7 +157,7 @@ int main()
     CIMRSDK* pSDK = new CIMRSDK();
     MRCONFIG config = { 0 };
 
-    config.bSlam = false;   //true: open slam
+    config.bSlam = true;   //true: open slam
     pSDK->Init(config);
 
 //    PrintModuleInfo(pSDK);
