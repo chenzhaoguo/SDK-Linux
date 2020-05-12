@@ -9,7 +9,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-file_result = os.path.abspath('./result7') + '/position.txt'
+file_result = os.path.abspath('./result12') + '/position.txt'
 
 def plot_position():
     ###    load data    ###
@@ -20,17 +20,20 @@ def plot_position():
     ###    plot trajectory    ###
     fig1 = plt.figure(num=1, figsize=(6, 4))
     ax1 = fig1.gca(projection='3d')
-    ax1.plot(traj_position[:,0], traj_position[:,1], traj_position[:,2], linestyle='--', linewidth=1.0, color='b', label='ground truth')
-    ax1.plot([traj_position[0, 0]], [traj_position[0, 1]], [traj_position[0, 2]], 'o', markersize=4, color='r', label='start point')
+    ax1.plot(traj_position[:,0], traj_position[:,1], traj_position[:,2], linestyle='-', linewidth=1.0, color='b', label='trajectory')
+    ax1.plot([traj_position[0, 0]], [traj_position[0, 1]], [traj_position[0, 2]], 'o', markersize=5, color='r', label='start point')
+    ax1.plot([traj_position[len(traj_position)-1, 0]], [traj_position[len(traj_position)-1, 1]], [traj_position[len(traj_position)-1, 2]], '^', markersize=6, color='r', label='end point')
     ax1.set_xlabel('x [m]', fontsize=10)
     ax1.set_ylabel('y [m]', fontsize=10)
     ax1.set_zlabel('z [m]', fontsize=10)
+    # ax1.set_ylim(-0.8, 0.8)
+    # ax1.set_zlim(-0.8, 1.5)
     ax1.tick_params(labelsize=8)
     ax1.legend(loc='upper right', fontsize=7, edgecolor='w')
     ax1.grid(linestyle="--")
 
     ###    plot trajectory x y z    ###
-    fig2, ax2 = plt.subplots(figsize=(6, 3))
+    fig2, ax2 = plt.subplots(figsize=(6, 3.5))
     ax2.plot(traj_time_rel, traj_position[:,0], linewidth=1.0, color='r', label='x')
     ax2.plot(traj_time_rel, traj_position[:,1], linewidth=1.0, color='g', label='y')
     ax2.plot(traj_time_rel, traj_position[:,2], linewidth=1.0, color='b', label='z')
