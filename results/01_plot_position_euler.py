@@ -9,7 +9,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-file_result = os.path.abspath('./result12') + '/position.txt'
+# file_result = os.path.abspath('./result12') + '/position.txt'
+file_result = os.path.abspath('./result23') + '/result23.txt'
 
 def plot_position():
     ###    load data    ###
@@ -26,7 +27,7 @@ def plot_position():
     ax1.set_xlabel('x [m]', fontsize=10)
     ax1.set_ylabel('y [m]', fontsize=10)
     ax1.set_zlabel('z [m]', fontsize=10)
-    # ax1.set_ylim(-0.8, 0.8)
+    ax1.set_ylim(-0.8, 0.8)
     # ax1.set_zlim(-0.8, 1.5)
     ax1.tick_params(labelsize=8)
     ax1.legend(loc='upper right', fontsize=7, edgecolor='w')
@@ -44,12 +45,12 @@ def plot_position():
     ax2.grid(linestyle="--")
 
     ###    plot trajectory x y    ###
-    fig3, ax3 = plt.subplots(figsize=(6, 3))
-    ax3.plot(traj_position[:,0], traj_position[:,1], linewidth=1.0, color='b')
-    ax3.set_xlabel('x [m]', fontsize=10)
-    ax3.set_ylabel('y [m]', fontsize=10)
-    ax3.set_ylim(-0.8, 0.8)
-    ax3.grid(linestyle="--")
+    # fig3, ax3 = plt.subplots(figsize=(6, 3))
+    # ax3.plot(traj_position[:,0], traj_position[:,1], linewidth=1.0, color='b')
+    # ax3.set_xlabel('x [m]', fontsize=10)
+    # ax3.set_ylabel('y [m]', fontsize=10)
+    # ax3.set_ylim(-0.8, 0.8)
+    # ax3.grid(linestyle="--")
 
 
 def plot_euler():

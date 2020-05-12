@@ -71,11 +71,11 @@ void SaveData(std::string filename, std::map<double, std::pair<Eigen::Vector3d, 
 }
 
 int main() {
-  std::string positon_file = "./result12/position.txt";
+  std::string positon_file = "./result23/result23.txt";
   std::map<double, std::pair<Eigen::Vector3d, Eigen::Quaterniond>> line_tum;
   TumQuat2Euler(positon_file, line_tum);
 
-  std::string save_file = "./result12/position_tum.txt";
+  std::string save_file = "./result23/result23_tum.txt";
   SaveData(save_file, line_tum);
 
   return 0;
